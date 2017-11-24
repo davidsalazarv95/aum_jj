@@ -1,0 +1,43 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(gganimate)
+library(forcats)
+library(ggthemes)
+library(hrbrthemes)
+```
+
+```{r}
+datos <- read_csv("great.csv")
+datos
+```
+
+```{r}
+g <- datos %>% 
+  filter(AUM >0) %>% 
+  arrange(AUM) %>% 
+  mutate(AUM = paste0("$", formatC(as.numeric(AUM), format="f", digits=0, big.mark=","))) %>% 
+  mutate(AUM = fct_inorder(factor(AUM))) %>% 
+  ggplot(aes(x = `Target ES`, y = `Target Return`)) +
+  geom_line(aes(group = AUM), alpha = 0.1) +
+  geom_line(data = datos %>% 
+              filter(AUM == 0), aes(x = `Target ES`, y = `Target Return`), linetype = 2, color = "red3") +
+  geom_line(aes(frame = AUM), color = "blue3") +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_continuous(labels = scales::percent) +
+  labs(x = "Expected Shortfall", y = "Expected Return", subtitle = "Dashed red line represents full fondos bancolombia frontier",
+       title = "AUM: ") +
+  theme(plot.title = element_text(face = "bold"),
+        axis.title = element_text(face = "bold"))
+gganimate(g, "peliculita.gif")
+```
+
+```{r}
+paste0("$", formatC(as.numeric(datos$AUM), format="f", digits=2, big.mark=","))
+```
+

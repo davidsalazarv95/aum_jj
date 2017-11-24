@@ -1,0 +1,260 @@
+---
+title: "Data Analytics"
+output: html_notebook
+---
+
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+Prueba_Analitica <- read_excel("~/Desktop/untitled folder/Prueba Analitica.xls", 
+    col_types = c("numeric", "numeric", "date", 
+        "text", "numeric", "numeric", "numeric", 
+        "text", "numeric", "numeric", "numeric", 
+        "text", "text", "text", "text", "text", 
+        "text", "text", "text", "numeric", 
+        "numeric"))
+Prueba_Analitica
+```
+
+## 1
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>% 
+  group_by(Year, `Product Category`) %>% 
+  summarise(sales = sum(Sales)) 
+```
+
+Increase in sales
+
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>% 
+  group_by(Year, `Product Category`) %>% 
+  summarise(sales = sum(Sales)) %>% 
+  ungroup() %>% 
+  group_by(`Product Category`) %>% 
+  filter(Year %in% c(2010, 2012)) %>% 
+  mutate(diff = sales - lag(sales, 1)) %>% 
+  arrange(desc(diff))
+```
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>% 
+  group_by(Year, `Product Category`) %>% 
+  summarise(sales = sum(Sales)) %>% 
+  ungroup() %>% 
+  group_by(`Product Category`) %>% 
+  filter(Year %in% c(2010, 2012)) %>% 
+  mutate(compound_rate = sales/lag(sales, 1)-1)
+```
+
+## 2
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>% 
+  group_by(Year, `Product Category`) %>% 
+  summarise(sales = sum(Sales)) %>% 
+  ungroup() %>% 
+  group_by(`Product Category`) %>% 
+  filter(Year %in% c(2011, 2012)) %>% 
+  mutate(compound_rate = sales/lag(sales, 1)-1)
+```
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>% 
+  group_by(Year, `Product Category`) %>% 
+  summarise(profit = sum(Profit)) %>% 
+  ungroup() %>% 
+  group_by(`Product Category`) %>% 
+  filter(Year %in% c(2011, 2012)) %>% 
+  mutate(compound_rate = profit/lag(profit, 1)-1)
+```
+
+## 3
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2012) %>% 
+  group_by(`Customer Segment`) %>% 
+  summarise(profit = sum(Profit)) %>% 
+  arrange(desc(profit))
+```
+
+## 4
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2010, `Product Sub-Category` == "Scissors, Rulers and Trimmers") %>% 
+  arrange(desc(Sales))
+```
+
+## 5
+
+```{r}
+Prueba_Analitica %>% 
+  mutate(Year = year(`Order Date`)) %>%
+  filter(Year == 2010) %>% 
+  group_by(Year, `Product Sub-Category`) %>% 
+  summarise(profit = sum(Profit),
+            sales = sum(Sales)) %>% 
+  ungroup() %>% 
+  group_by(`Product Sub-Category`) %>% 
+  summarise(margin = profit/sales) %>% 
+  arrange(desc(margin))
+```
+
+## 6
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>%
+  filter(Year == 2011,
+         `Product Category` == "Furniture") %>% 
+  group_by(`Customer Segment`) %>% 
+  summarise(sales = sum(Sales)) %>% 
+  arrange(desc(sales))
+```
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>%
+  filter(Year == 2011,
+         `Product Category` == "Furniture",
+         `Customer Segment` == "Corporate") %>% 
+  group_by(`Ship Mode`) %>% 
+  summarise(n())
+```
+
+## 7
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2012,
+         `Customer Segment` == "Corporate") %>% 
+  group_by(`Customer Name`) %>% 
+  summarise(n())
+  
+```
+
+## 8
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2011, 
+         Profit > 0) %>%
+  summarise(profit = sum(Profit))
+```
+
+## 9
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2010) %>% 
+  group_by(Region) %>% 
+  summarise(profit = sum(Profit)) %>% 
+  arrange(desc(profit)) %>% 
+  mutate(profit = profit/sum(profit), cumulative = cumsum(profit))
+```
+
+## 10
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year %in% c(2009, 2012)) %>% 
+  group_by(`Product Category`, Year) %>% 
+  summarise(Sales = sum(Sales),
+         Profit = sum(Profit)) %>% 
+  mutate(sales = (Sales/lag(Sales, 1))^((1/3)-1),
+            profit = (Profit/lag(Profit, 1))^((1/3)-1))
+```
+
+## 11
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  group_by(`Order Priority`) %>% 
+  summarise(profit = sum(Profit),
+            sales = sum(Sales),
+            shipping_cost = sum(`Shipping Cost`),
+            avg_shipping = mean(`Shipping Cost`)) %>%
+  mutate(margin = profit/sales,
+         margin_cost = shipping_cost/sales*100) %>% 
+  arrange(desc(margin_cost))
+```
+
+
+```{r}
+Prueba_Analitica %>%
+  ggplot(aes(x = Discount, fill = `Order Priority`)) +
+  geom_histogram() +
+  facet_wrap(`Order Priority`)
+```
+## 12
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2010) %>% 
+  group_by(`Customer Segment`, `Product Category`) %>%
+  summarise(n = n()) %>%
+  mutate(n = n/sum(n)) %>% 
+  ggplot(aes(x = `Product Category`, y = n)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  facet_wrap(facets = ~`Customer Segment`) +
+  hrbrthemes::theme_ipsum_rc()
+```
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2010) %>% 
+  group_by(`Customer Segment`, Region) %>%
+  summarise(n = n()) %>%
+  mutate(n = n/sum(n)) %>% 
+  ggplot(aes(x = Region, y = n)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  facet_wrap(facets = ~`Customer Segment`) +
+  hrbrthemes::theme_ipsum_rc()
+```
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  group_by(`Customer Segment`) %>% 
+  summarise(profit = sum(Profit),
+            sales = sum(Sales),
+            shipping_cost = sum(`Shipping Cost`),
+            avg_shipping = mean(`Shipping Cost`),
+            avg_discount = mean(Discount)) %>%
+  mutate(margin = profit/sales,
+         margin_cost = shipping_cost/sales*100) %>% 
+  arrange(desc(profit))
+```
+
+## 13
+
+```{r}
+Prueba_Analitica %>%
+  mutate(Year = year(`Order Date`)) %>% 
+  filter(Year == 2011)
+```
+
